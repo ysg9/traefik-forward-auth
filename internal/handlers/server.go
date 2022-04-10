@@ -76,8 +76,11 @@ func (s *Server) buildRoutes() {
 		}
 	}
 
+	// this registration of the callback handler doesn't seem to work...
+	// replaced in main.go
+	//
 	// Add callback handler
-	s.router.Handle(s.config.Path, s.AuthCallbackHandler())
+	//s.router.Handle(s.config.Path, s.AuthCallbackHandler())
 
 	// Add a default handler
 	if s.config.DefaultAction == "allow" {

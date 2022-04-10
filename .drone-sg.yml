@@ -5,6 +5,8 @@ name: default
 trigger:
   branch:
   - sg1
+  event:
+  - push
 
 steps:
 - name: build

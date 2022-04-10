@@ -86,6 +86,9 @@ func main() {
 	// Attach router to default server
 	http.HandleFunc("/", server.RootHandler)
 
+	// Add callback handler
+	http.HandleFunc(config.Path, server.AuthCallbackHandler())
+
 	// Start
 	log.Debugf("starting with options: %s", config)
 	log.Info("listening on :4181")

@@ -102,9 +102,10 @@ func (a *Authenticator) useAuthDomain(r *http.Request) (bool, string) {
 // Cookie methods
 
 // MakeIDCookie creates an auth cookie
-func (a *Authenticator) MakeIDCookie(r *http.Request, email string, token string) (*http.Cookie, error) {
+func (a *Authenticator) MakeIDCookie(r *http.Request, name, email string, token string) (*http.Cookie, error) {
 	expires := a.config.CookieExpiry()
 	data := &ID{
+		Name: name,
 		Email: email,
 		Token: token,
 	}

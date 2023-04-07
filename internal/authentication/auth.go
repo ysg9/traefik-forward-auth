@@ -30,6 +30,7 @@ func NewAuthenticator(config *configuration.Config) *Authenticator {
 }
 
 type ID struct {
+	Name  string
 	Email string
 	Token string
 }

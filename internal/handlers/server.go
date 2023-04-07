@@ -340,6 +340,16 @@ func (s *Server) AuthCallbackHandler() http.HandlerFunc {
 		logger.Debugf("claims: %+v", claims)
 
 		email, ok := claims["email"]
+		if !ok {
+			logger.Warn("no email claim present in the ID token")
+		}
+
+		name, ok := claims["name"]
+		if !ok || (ok && strings.TrimSpace(name.(string)) == "") {
+			logger.Warn("no name claim present in the ID token")
+			//name = email.(string)
+		}
+
 		if ok {
 			token := ""
 			if s.config.ForwardTokenHeaderName != "" {
@@ -347,7 +357,7 @@ func (s *Server) AuthCallbackHandler() http.HandlerFunc {
 			}
 
 			// Generate cookies
-			c, err := s.authenticator.MakeIDCookie(r, email.(string), token)
+			c, err := s.authenticator.MakeIDCookie(r, name.(string), email.(string), token)
 			if err != nil {
 				logger.Errorf("error generating secure session cookie: %v", err)
 				http.Error(w, "Bad Gateway", 502)
@@ -355,16 +365,9 @@ func (s *Server) AuthCallbackHandler() http.HandlerFunc {
 			}
 			http.SetCookie(w, c)
 			logger.WithFields(logrus.Fields{
-				"user": claims["email"].(string),
+				"user": name.(string),
+				"email": email.(string),
 			}).Infof("generated auth cookie")
-		} else {
-			logger.Warn("no email claim present in the ID token")
-		}
-
-		// If name in null, empty or whitespace, use email address for name
-		name, ok := claims["name"]
-		if !ok || (ok && strings.TrimSpace(name.(string)) == "") {
-			name = email.(string)
 		}
 
 		http.SetCookie(w, s.authenticator.MakeNameCookie(r, name.(string)))

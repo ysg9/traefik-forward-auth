@@ -10,5 +10,5 @@ rm -f .dockerignore
 
 # for deps scanning
 go list -m all > go.list
-ls -l go.list
+#ls -l go.list
 

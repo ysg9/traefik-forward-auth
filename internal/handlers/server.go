@@ -330,6 +330,7 @@ func (s *Server) AuthCallbackHandler() http.HandlerFunc {
 			http.Error(w, "Bad Gateway", 502)
 			return
 		}
+		logger.Debugf("claims: %+v", claims)
 
 		email, ok := claims["email"]
 		if ok {

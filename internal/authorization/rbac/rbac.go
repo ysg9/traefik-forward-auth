@@ -150,6 +150,7 @@ func (ra *Authorizer) Authorize(user authorization.User, requestVerb string, req
 		for _, rule := range role.Rules {
 			ra.logger.Printf("Authorize: match rule %+v with verb %s, url %+v", &rule, requestVerb, requestURL)
 			if verbMatches(&rule, requestVerb) && nonResourceURLMatches(&rule, requestURL) {
+				ra.logger.Printf("matched")
 				return true, nil
 			}
 		}

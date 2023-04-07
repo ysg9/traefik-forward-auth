@@ -1,7 +1,7 @@
 package rbac
 
 import (
-	"log"
+	//"log"
 	"net/url"
 	"os"
 	"strings"
@@ -15,6 +15,7 @@ import (
 	rbaclisterv1 "k8s.io/client-go/listers/rbac/v1"
 
 	"github.com/mesosphere/traefik-forward-auth/internal/authorization"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -26,13 +27,14 @@ const (
 )
 
 // Logger is an interface for basic log output
-type Logger interface {
-	Printf(format string, v ...interface{})
-}
+//type Logger interface {
+//	Printf(format string, v ...interface{})
+//}
 
 // Authorizer implements the authorizer by watching and using ClusterRole and ClusterRoleBinding Kubernetes (RBAC) objects
 type Authorizer struct {
-	logger                   Logger
+	//logger                   Logger
+	logger                   logrus.FieldLogger
 	clientset                kubernetes.Interface
 	clusterRoleLister        rbaclisterv1.ClusterRoleLister
 	clusterRoleBindingLister rbaclisterv1.ClusterRoleBindingLister
@@ -45,10 +47,11 @@ type Authorizer struct {
 }
 
 // NewAuthorizer creates a new RBAC authorizer. Logger can be nil to use standard error logger.
-func NewAuthorizer(clientset kubernetes.Interface, logger Logger) *Authorizer {
-	if logger == nil {
-		logger = log.New(os.Stderr, "rbac", log.LstdFlags)
-	}
+//func NewAuthorizer(clientset kubernetes.Interface, logger Logger) *Authorizer {
+func NewAuthorizer(clientset kubernetes.Interface, logger logrus.FieldLogger) *Authorizer {
+	//if logger == nil {
+	//	logger = log.New(os.Stderr, "rbac", log.LstdFlags)
+	//}
 
 	authz := &Authorizer{
 		logger:       logger,
@@ -68,9 +71,10 @@ func (ra *Authorizer) getRoleByName(name string) *rbacv1.ClusterRole {
 	clusterRole, err := ra.clusterRoleLister.Get(name)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			ra.logger.Printf("role binding is bound to non-existent role %s", name)
+			//ra.logger.Printf("role binding is bound to non-existent role %s", name)
+			ra.logger.Errorf("role binding is bound to non-existent role %s", name)
 		} else {
-			ra.logger.Printf("error getting role %s from role binding: %v", name, err)
+			ra.logger.Errorf("error getting role %s from role binding: %v", name, err)
 		}
 		return nil
 	}
@@ -148,9 +152,15 @@ func (ra *Authorizer) Authorize(user authorization.User, requestVerb string, req
 	// check all rules in the list of roles to see if any matches
 	for _, role := range roles.Items {
 		for _, rule := range role.Rules {
-			ra.logger.Printf("Authorize: match rule %+v with verb %s, url %+v", &rule, requestVerb, requestURL)
+			ra.logger.Debugf("Authorize: match rule %+v with verb %s, url %+v", &rule, requestVerb, requestURL)
+			if verbMatches(&rule, requestVerb) {
+				ra.logger.Debugf("matched verb")
+			}
+			if nonResourceURLMatches(&rule, requestURL) {
+				ra.logger.Debugf("matched url")
+			}
 			if verbMatches(&rule, requestVerb) && nonResourceURLMatches(&rule, requestURL) {
-				ra.logger.Printf("matched")
+				ra.logger.Debugf("matched")
 				return true, nil
 			}
 		}

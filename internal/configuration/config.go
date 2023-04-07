@@ -43,6 +43,7 @@ type Config struct {
 	InsecureCookie          bool                 `long:"insecure-cookie" env:"INSECURE_COOKIE" description:"Use insecure cookies"`
 	CookieName              string               `long:"cookie-name" env:"COOKIE_NAME" default:"_forward_auth" description:"ID Cookie Name"`
 	EmailHeaderNames        CommaSeparatedList   `long:"email-header-names" env:"EMAIL_HEADER_NAMES" default:"X-Forwarded-User" description:"Response headers containing the authenticated user's username"`
+	ResponseHeaderNames     CommaSeparatedList   `long:"response-header-names" env:"RESPONSE_HEADER_NAMES" default:"X-Forwarded-User" description:"Response headers containing the authenticated user's username"`
 	UserCookieName          string               `long:"user-cookie-name" env:"USER_COOKIE_NAME" default:"_forward_auth_name" description:"User Cookie Name"`
 	CSRFCookieName          string               `long:"csrf-cookie-name" env:"CSRF_COOKIE_NAME" default:"_forward_auth_csrf" description:"CSRF Cookie Name"`
 	ClaimsSessionName       string               `long:"claims-session-name" env:"CLAIMS_SESSION_NAME" default:"_forward_auth_claims" description:"Name of the claims session"`

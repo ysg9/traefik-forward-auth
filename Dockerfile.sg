@@ -1,5 +1,5 @@
 arg BASE_IMAGE
 FROM $BASE_IMAGE
-RUN [[ ! -e /etc/nsswitch.conf ]] && echo 'hosts: files dns' > /etc/nsswitch.conf
+RUN if [ ! -e /etc/nsswitch.conf ]; then echo 'hosts: files dns' > /etc/nsswitch.conf; fi
 COPY ./traefik-forward-auth /
 CMD ["/traefik-forward-auth"]

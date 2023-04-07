@@ -160,7 +160,7 @@ func (ra *Authorizer) Authorize(user authorization.User, requestVerb string, req
 				ra.logger.Debugf("matched url")
 			}
 			if verbMatches(&rule, requestVerb) && nonResourceURLMatches(&rule, requestURL) {
-				ra.logger.Debugf("matched")
+				//ra.logger.Debugf("matched")
 				return true, nil
 			}
 		}

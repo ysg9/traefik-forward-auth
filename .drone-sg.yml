@@ -5,8 +5,8 @@ name: default
 trigger:
   branch:
   - sg1
-  event:
-  - push
+  #event:
+  #- push
 
 steps:
 - name: build
@@ -14,23 +14,31 @@ steps:
   pull: always
   settings:
     build_script: build.sh
+  when:
+    event:
+    - cron
 
 - name: scan
-  image: %%{NcicdDockerRepo}/cicd/nancy:latest
+  image: %%{NcicdDockerRepoPrivateCR}/cicd/nancy:latest
   pull: always
-  failure: ignore
+  #failure: ignore
   depends_on:
   - build
+  when:
+    event:
+    - cron
 
 - name: create-image
-  image: %%{DroneDockerImage}
+  image: %%{DroneKanikoImage}
   settings:
-    repo: %%{NcicdDockerRepo}/cicd/traefik-forward-auth
+    dry_run: true
+    repo: %%{NcicdDockerRepoPrivateCR}/cicd/traefik-forward-auth
     dockerfile: Dockerfile.sg
     build_args:
     - BASE_IMAGE=%%{BaseAlpineImage}:latest
-    tags:
-    - latest
   depends_on:
   - scan
+  when:
+    event:
+    - cron
 

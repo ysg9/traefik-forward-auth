@@ -42,3 +42,14 @@ steps:
     event:
     - cron
 
+- name: notify-end
+  image: %%{DroneEmailImage}
+  depends_on:
+  - create-image
+  when:
+    status:
+    - failure
+    - success
+    event:
+    - cron
+

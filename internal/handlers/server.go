@@ -144,6 +144,10 @@ func (s *Server) AuthHandler(rule string) http.HandlerFunc {
 			s.notAuthenticated(logger, w, r)
 			return
 		}
+		logger.WithFields(logrus.Fields{
+			"name": id.Name,
+			"email": id.Email,
+		}).Debugf("cookie validated")
 
 		// Validate user
 		valid := s.authenticator.ValidateEmail(id.Email)
@@ -177,7 +181,7 @@ func (s *Server) AuthHandler(rule string) http.HandlerFunc {
 		}
 
 		if s.config.EnableRBAC && !s.authzIsBypassed(r) {
-			kubeUserInfo := s.makeKubeUserInfo(id.Email, groups)
+			kubeUserInfo := s.makeKubeUserInfo(id.Name, id.Email, groups)
 
 			requestURL := authentication.GetRequestURL(r)
 
@@ -506,13 +510,14 @@ func (s *Server) authzIsBypassed(r *http.Request) bool {
 }
 
 // makeKubeUserInfo appends group prefix to all provided groups and adds "system:authenticated" group to the list
-func (s *Server) makeKubeUserInfo(email string, groups []string) authorization.User {
+func (s *Server) makeKubeUserInfo(name, email string, groups []string) authorization.User {
 	g := []string{"system:authenticated"}
 	for _, group := range groups {
 		g = append(g, fmt.Sprintf("%s%s", s.config.GroupClaimPrefix, group))
 	}
 	return authorization.User{
-		Name:   email,
+		Name:   name,
+		Email:  email,
 		Groups: g,
 	}
 }

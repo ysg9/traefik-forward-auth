@@ -214,9 +214,13 @@ func (s *Server) AuthHandler(rule string) http.HandlerFunc {
 		}
 
 		// Valid request
-		logger.Debugf("Allow request from %s", id.Email)
-		for _, headerName := range s.config.EmailHeaderNames {
-			w.Header().Set(headerName, id.Email)
+		//logger.Debugf("Allow request from %s", id.Email)
+		//for _, headerName := range s.config.EmailHeaderNames {
+		//	w.Header().Set(headerName, id.Email)
+		//}
+		logger.Debugf("Allow request from %s", id.Name)
+		for _, headerName := range s.config.ResponseHeaderNames {
+			w.Header().Set(headerName, id.Name)
 		}
 
 		if s.config.EnableImpersonation {

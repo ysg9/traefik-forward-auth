@@ -50,6 +50,7 @@ func NewServer(userinfo v1alpha1.UserInfoInterface, clientset kubernetes.Interfa
 	s.userinfo = userinfo
 	if config.EnableRBAC {
 		rbac := rbac.NewAuthorizer(clientset, s.log)
+		rbac.UseClusterRole = config.UseClusterRole
 		rbac.CaseInsensitiveSubjects = config.CaseInsensitiveSubjects
 		s.authorizer = rbac
 	}

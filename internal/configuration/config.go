@@ -64,7 +64,6 @@ type Config struct {
 
 	// RBAC
 	EnableRBAC              bool               `long:"enable-rbac" env:"ENABLE_RBAC" description:"Indicates that RBAC support should be enabled"`
-	UseClusterRole          bool               `long:"use-cluster-role" env:"USE_CLUSTER_ROLE" description:"Use ClusterRole for RBAC"`
 	AuthZPassThrough        CommaSeparatedList `long:"authz-pass-through" env:"AUTHZ_PASS_THROUGH" description:"One or more routes which bypass authorization checks"`
 	CaseInsensitiveSubjects bool               `long:"case-insensitive-subjects" env:"CASE_INSENSITIVE_SUBJECTS" description:"Make case-insensitive comparison of user and group names in the RBAC implementation"`
 

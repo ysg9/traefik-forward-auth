@@ -71,17 +71,17 @@ func NewAuthorizer(clientset kubernetes.Interface, logger logrus.FieldLogger) *A
 
 // getRoleByName finds the Role by its name or returns nil
 func (ra *Authorizer) getRoleByName(name string) *rbacv1.Role {
-	role, err := ra.roleLister.Get(name)
+	roleList, err := ra.roleLister.List(labels.Everything())
 	if err != nil {
-		if errors.IsNotFound(err) {
-			//ra.logger.Printf("role binding is bound to non-existent role %s", name)
-			ra.logger.Errorf("role binding is bound to non-existent role %s", name)
-		} else {
-			ra.logger.Errorf("error getting role %s from role binding: %v", name, err)
-		}
-		return nil
+		ra.logger.Errorf("error listing roles: %v", err)
 	}
-	return role
+	for _, r := range roleList {
+        if strings.EqualFold(name, r.ObjectMeta.Name) {
+            return &r
+        }
+	}
+	ra.logger.Errorf("role binding is bound to non-existent role %s", name)
+	return nil
 }
 
 // getClusterRoleByName finds the ClusterRole by its name or returns nil
@@ -164,7 +164,7 @@ func (ra *Authorizer) prepareCache() {
 // GetRolesBoundToUser returns list of roles bound to the specified user or groups the user is part of
 func (ra *Authorizer) GetRolesBoundToUser(user authorization.User) (*rbacv1.RoleList, error) {
 	roles := rbacv1.RoleList{}
-	roleBindings, err := ra.RoleBindingLister.List(ra.selector)
+	roleBindings, err := ra.roleBindingLister.List(ra.selector)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func (ra *Authorizer) GetClusterRolesBoundToUser(user authorization.User) (*rbac
 	}
 	for _, clusterRoleBinding := range clusterRoleBindings {
 		for _, subject := range clusterRoleBinding.Subjects {
-			role := ra.getRoleForSubject(user, subject, clusterRoleBinding.RoleRef.Name)
+			role := ra.getClusterRoleForSubject(user, subject, clusterRoleBinding.RoleRef.Name)
 			if role != nil {
 				clusterRoles.Items = append(clusterRoles.Items, *role)
 				break
@@ -204,10 +204,48 @@ func (ra *Authorizer) GetClusterRolesBoundToUser(user authorization.User) (*rbac
 // Authorize performs the authorization logic
 func (ra *Authorizer) Authorize(user authorization.User, requestVerb string, requestURL *url.URL) (bool, error) {
 	if ra.UseClusterRole {
-		roles, err := ra.GetClusterRolesBoundToUser(user)
+		return ra.AuthorizeByClusterRole(user, requestVerb, requestURL )
 	} else {
-		roles, err := ra.GetRolesBoundToUser(user)
+		return ra.AuthorizeByRole(user, requestVerb, requestURL )
 	}
+}
+
+// Authorize performs the authorization logic
+func (ra *Authorizer) AuthorizeByRole(user authorization.User, requestVerb string, requestURL *url.URL) (bool, error) {
+	roles, err := ra.GetRolesBoundToUser(user)
+	if err != nil {
+		return false, err
+	}
+
+	// deny if no roles defined
+	if len(roles.Items) < 1 {
+		return false, nil
+	}
+
+	// check all rules in the list of roles to see if any matches
+	for _, role := range roles.Items {
+		for _, rule := range role.Rules {
+			ra.logger.Debugf("Authorize: match rule %+v with verb %s, url %+v", &rule, requestVerb, requestURL)
+			if verbMatches(&rule, requestVerb) {
+				ra.logger.Debugf("matched verb")
+			}
+			if nonResourceURLMatches(&rule, requestURL) {
+				ra.logger.Debugf("matched url")
+			}
+			if verbMatches(&rule, requestVerb) && nonResourceURLMatches(&rule, requestURL) {
+				//ra.logger.Debugf("matched")
+				return true, nil
+			}
+		}
+	}
+
+	// no rules match the request -> deny
+	return false, nil
+}
+
+// Authorize performs the authorization logic
+func (ra *Authorizer) AuthorizeByClusterRole(user authorization.User, requestVerb string, requestURL *url.URL) (bool, error) {
+	roles, err := ra.GetClusterRolesBoundToUser(user)
 	if err != nil {
 		return false, err
 	}

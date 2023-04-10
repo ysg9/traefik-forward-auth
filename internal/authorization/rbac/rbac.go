@@ -77,7 +77,7 @@ func (ra *Authorizer) getRoleByName(name string) *rbacv1.Role {
 	}
 	for _, r := range roleList {
         if strings.EqualFold(name, r.ObjectMeta.Name) {
-            return r
+            return &r
         }
 	}
 	ra.logger.Errorf("role binding is bound to non-existent role %s", name)

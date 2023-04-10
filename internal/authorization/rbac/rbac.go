@@ -36,8 +36,8 @@ type Authorizer struct {
 	//logger                   Logger
 	logger                   logrus.FieldLogger
 	clientset                kubernetes.Interface
-	roleLister               rbaclisterv1.roleLister
-	roleBindingLister        rbaclisterv1.roleBindingLister
+	roleLister               rbaclisterv1.RoleLister
+	roleBindingLister        rbaclisterv1.RoleBindingLister
 	clusterRoleLister        rbaclisterv1.ClusterRoleLister
 	clusterRoleBindingLister rbaclisterv1.ClusterRoleBindingLister
 	sharedInformerFactory    informers.SharedInformerFactory

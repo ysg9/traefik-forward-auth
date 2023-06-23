@@ -6,7 +6,7 @@ go mod edit -replace github.com/gogo/protobuf=github.com/gogo/protobuf@v1.3.2
 go mod edit -replace github.com/miekg/dns=github.com/miekg/dns@v1.1.53
 go mod edit -replace golang.org/x/text=golang.org/x/text@v0.9.0
 go mod edit -replace golang.org/x/net=golang.org/x/net@v0.9.0
-go mod edit -replace golang.org/grpc=golang.org/grpc@v1.56.0
+go mod edit -replace google.golang.org/grpc=google.golang.org/grpc@v1.56.0
 go mod tidy
 go build -o ./traefik-forward-auth ./cmd/main.go
 ls -l ./traefik-forward-auth
